@@ -45,13 +45,28 @@ module.exports = function (RED) {
             result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "PlanId": payload.PlanId });
             result.isOk = true;
         }
-        else if(payload.operationMode == "2" ) { // Change Job Plan
-            
+        else if(payload.operationMode == "4" ) { // Finish Production
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "Quantity": 0, "ReferenceQuantityType": 0, "IsQuantityApproved": false });
+            result.isOk = true;
         }
-        else if(payload.operationMode == "3" ) { // Save Production
-           
+        else if(payload.operationMode == "5" ) { // Start Stoppage
+            if(!payload.StoppageCauseId){
+                return result;
+            }
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "StoppageCauseId": payload.StoppageCauseId });
+            result.isOk = true;
         }
-
+        else if(payload.operationMode == "6" ) { // Change Stoppage
+            if(!payload.StoppageCauseId){
+                return result;
+            }
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "StoppageCauseId": payload.StoppageCauseId });
+            result.isOk = true;
+        }
+        else if(payload.operationMode == "7" ) { // Finish Stoppage
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.isOk = true;
+        }        
         return result;
     }
 
@@ -372,7 +387,7 @@ module.exports = function (RED) {
                         }
                         //Process onay bekleniyor
                         setTimeout(function () {
-                            query = "select COMMANDID,ISPROCESSED from NGPCOMMANDQUEUE where COMMANDID=" + commandId;
+                            query = "select Q.COMMANDID,Q.ISPROCESSED,P.ISSUCCESS,P.MESSAGE from NGPCOMMANDQUEUE Q join NGPCOMMANDRESPONSE P on Q.COMMANDID = P.COMMANDID where P.COMMANDID=" + commandId;                            
                             //node.log(query);
                             trexmesCN.execSql("", query, [], {}, function (err, data, info) {
                                 if (err) {
@@ -380,23 +395,34 @@ module.exports = function (RED) {
                                 } else {  
                                     setResult(msg, node.outField, data, node.returnType);
                                     let isProcessed = 0;
+                                    let isSuccess = 0;
+                                    let message = "";
                                     if(msg.payload.length>0) {
                                         isProcessed = msg.payload[0].ISPROCESSED;
+                                        isSuccess = msg.payload[0].ISSUCCESS;
+                                        message =  msg.payload[0].MESSAGE;
                                     }
                                     node.send(msg);
-                                    if(isProcessed == 1) {
+                                    if( isProcessed == 1 && isSuccess == 1) {
                                         node.status({
                                             fill: 'green',
                                             shape: 'dot',
                                             text: 'done'
                                         });      
                                     }
+                                    else if( isProcessed == 1 && isSuccess == 0) {
+                                        node.status({
+                                            fill: 'yellow',
+                                            shape: 'dot',
+                                            text: 'done with error: ' + message 
+                                        });    
+                                    }
                                     else {
                                         node.status({
-                                            fill: 'orange',
+                                            fill: 'blue',
                                             shape: 'dot',
                                             text: 'command not processed in 2 sec.'
-                                        });    
+                                        });   
                                     }
                                 }
                             });

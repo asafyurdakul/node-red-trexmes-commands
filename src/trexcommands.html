@@ -333,24 +333,35 @@
             const modeField = $('#node-input-modeOpt').typedInput({
                 types: [
                     { value: '1|Load Job Plan', label: 'Load Job Plan', hasValue: false },
-                    { value: '2|Change Job Plan', label: 'Change Job Plan', hasValue: false },                    
-                    { value: '3|Save Production', label: 'Save Production', hasValue: false }
+                    { value: '4|Finish Production', label: 'Finish Production', hasValue: false },                    
+                    { value: '5|Start Stoppage', label: 'Start Stoppage', hasValue: false },
+                    { value: '6|Change Stoppage', label: 'Change Stoppage', hasValue: false },
+                    { value: '7|Finish Stoppage', label: 'Finish Stoppage', hasValue: false }
                 ],
                 typeField: $('#node-input-modeOptType'),
                 default: 'Load Job Plan'
             });
 						
-            //show/hide rows field depending on query type
+            //show expected data sample
             modeField.on('change', function() {
                 const operationMode = $(this).typedInput('type');					
 				
 				let data = '{}';
-				if(operationMode.startsWith('1|')) {
+				if(operationMode.startsWith('1|')) { // Load Job Plan
 					data = '{ "WorkstationId": 10 , "PlanId": 123 }';										
 				}
-				else if(operationMode.startsWith('2|')) {
-					data = '{"deneme": "123"}';									
+				else if(operationMode.startsWith('4|')) { //Finish Production
+					data = '{ "WorkstationId": 10 }';									
 				}
+				else if(operationMode.startsWith('5|')) { //Start Stoppage
+					data = '{ "WorkstationId": 10 , "StoppageCauseId": 11 }';									
+				}
+                else if(operationMode.startsWith('6|')) { //Change Stoppage
+					data = '{ "WorkstationId": 10 , "StoppageCauseId": 11 }';									
+				} 
+                else if(operationMode.startsWith('7|')) { //Finish Stoppage
+					data = '{ "WorkstationId": 10 }';									
+				}                                    
 				node.editor.setValue(JSON.stringify(JSON.parse(data),null, 2));	
 
             });
