@@ -1,0 +1,30 @@
+{
+  "name": "node-red-trexmes-commands",
+  "version": "0.0.1",
+  "description": "A node-red node to execute commands for Trex Mes Systems",
+  "main": "trexcommands.js",
+  "dependencies": {
+    "mssql": "^10.0.0",
+    "mustache": "^4.2.0"
+  },
+  "node-red": {
+    "version": ">=2.0.0",
+    "nodes": {
+      "trexcommands": "src/trexcommands.js"
+    }
+  },
+  "files": [
+    "src/"
+  ],
+  "keywords": [
+    "node-red",
+    "trex-mes",
+    "trex",
+    "mes"	
+  ],
+  "author": "asafyurdakul",  
+  "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  }
+}
