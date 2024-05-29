@@ -336,7 +336,13 @@
                     { value: '4|Finish Production', label: 'Finish Production', hasValue: false },                    
                     { value: '5|Start Stoppage', label: 'Start Stoppage', hasValue: false },
                     { value: '6|Change Stoppage', label: 'Change Stoppage', hasValue: false },
-                    { value: '7|Finish Stoppage', label: 'Finish Stoppage', hasValue: false }
+                    { value: '7|Finish Stoppage', label: 'Finish Stoppage', hasValue: false },
+                    { value: '9|Login Employee', label: 'Login Employee', hasValue: false },
+                    { value: '10|Logout Employee', label: 'Logout Employee', hasValue: false },
+                    { value: '13|Shifted Shift', label: 'Shifted Shift', hasValue: false },
+                    { value: '14|Start Test Mode', label: 'Start Test Mode', hasValue: false },
+                    { value: '15|Finish Test Mode', label: 'Finish Test Mode', hasValue: false },
+                    { value: '16|Create Deffect', label: 'Create Deffect', hasValue: false }                                                                                                    
                 ],
                 typeField: $('#node-input-modeOptType'),
                 default: 'Load Job Plan'
@@ -361,7 +367,25 @@
 				} 
                 else if(operationMode.startsWith('7|')) { //Finish Stoppage
 					data = '{ "WorkstationId": 10 }';									
-				}                                    
+				} 
+                else if(operationMode.startsWith('9|')) { //Login Employee
+					data = '{ "WorkstationId": 10, "EmployeeId": 11 }';									
+				}     
+                else if(operationMode.startsWith('10|')) { //Logout Employee
+					data = '{ "WorkstationId": 10, "EmployeeId": 11 }';									
+				}  
+                else if(operationMode.startsWith('13|')) { //Shifted Shift
+					data = '{ "WorkstationId": 10, "LineId": 11 }';									
+				}    
+                else if(operationMode.startsWith('14|')) { //Start Test Mode
+					data = '{ "WorkstationId": 10, "StoppageCauseId": 11 }';									
+				}   
+                else if(operationMode.startsWith('15|')) { //Finish Test Mode
+					data = '{ "WorkstationId": 10 }';									
+				} 
+                else if(operationMode.startsWith('16|')) { //Create Deffect
+					data = '{ "WorkstationId": 10, "DefectId": 11,"StockId": 12, "Quantity": 15.5 }';									
+				}  
 				node.editor.setValue(JSON.stringify(JSON.parse(data),null, 2));	
 
             });

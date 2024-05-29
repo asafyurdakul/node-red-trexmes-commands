@@ -66,7 +66,52 @@ module.exports = function (RED) {
         else if(payload.operationMode == "7" ) { // Finish Stoppage
             result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
             result.isOk = true;
-        }        
+        }  
+        else if(payload.operationMode == "9" ) { // Login Employee
+            if(!payload.EmployeeId){
+                return result;
+            }
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "EmployeeId": payload.EmployeeId });
+            result.isOk = true;
+        }              
+        else if(payload.operationMode == "10" ) { // Logout Employee
+            if(!payload.EmployeeId){
+                return result;
+            }
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "EmployeeId": payload.EmployeeId });
+            result.isOk = true;
+        }    
+        else if(payload.operationMode == "13" ) { // Shifted Shift
+            if(!payload.LineId){
+                return result;
+            }
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "LineId": payload.LineId });
+            result.isOk = true;
+        } 
+        else if(payload.operationMode == "14" ) { // Start Test Mode
+            if(!payload.StoppageCauseId){
+                return result;
+            }
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "StoppageCauseId": payload.StoppageCauseId });
+            result.isOk = true;
+        } 
+        else if(payload.operationMode == "15" ) { // Finish Test Mode
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.isOk = true;
+        }
+        else if(payload.operationMode == "16" ) { // Create Deffect
+            if(!payload.DefectId){
+                return result;
+            }
+            if(!payload.StockId){
+                return result;
+            }
+            if(!payload.Quantity){
+                return result;
+            }
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "DefectId": payload.DefectId, "StockId": payload.StockId, "Quantity": payload.Quantity, "ReferenceQuantityType": 0 });
+            result.isOk = true;
+        }                                        
         return result;
     }
 

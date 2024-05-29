@@ -16,6 +16,9 @@
   "files": [
     "src/"
   ],
+  "directories": {
+    "example": "examples"
+  },  
   "keywords": [
     "node-red",
     "trex-mes",
