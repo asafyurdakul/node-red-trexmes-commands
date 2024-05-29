@@ -1,6 +1,6 @@
 # node-red-trexmes-commands
 
-This is a [Node-Red][1] package that communicates with a trex Mes system
+This is a [Node-Red][1] package that communicates with a [trex Mes][2] system
 
 # Install
 
