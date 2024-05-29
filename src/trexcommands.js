@@ -373,7 +373,7 @@ module.exports = function (RED) {
                         //Process onay bekleniyor
                         setTimeout(function () {
                             query = "select COMMANDID,ISPROCESSED from NGPCOMMANDQUEUE where COMMANDID=" + commandId;
-                            node.log(query);
+                            //node.log(query);
                             trexmesCN.execSql("", query, [], {}, function (err, data, info) {
                                 if (err) {
                                     node.processError(err, msg);

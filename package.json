@@ -23,7 +23,7 @@
     "mes"	
   ],
   "author": "asafyurdakul",  
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "engines": {
     "node": ">=16"
   }
