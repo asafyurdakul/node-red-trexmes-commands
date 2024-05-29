@@ -1,6 +1,6 @@
 {
   "name": "node-red-trexmes-commands",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A node-red node to execute commands for Trex Mes Systems",
   "main": "trexcommands.js",
   "dependencies": {
@@ -20,9 +20,9 @@
     "node-red",
     "trex-mes",
     "trex",
-    "mes"	
+    "mes"
   ],
-  "author": "asafyurdakul",  
+  "author": "asafyurdakul",
   "license": "GPL-3.0-or-later",
   "engines": {
     "node": ">=16"
