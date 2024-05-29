@@ -22,7 +22,7 @@ The following operations can be performed with this node by communicating with t
  - Finish Test Mode
  - Create Deffect
 
-For configuration, first MS SQL server connection setting must be made. In addition, the "company" company identification id and the identification id of the personnel who will perform the transaction should be defined as default in the connection features, specifically for the Trex system.
+For configuration, first MS SQL server connection setting must be made. In addition, the company identification id and the identification id of the personnel who will perform the transaction should be defined as default in the connection features, specific to the trex system.
 
 Then, the relevant operation is selected from the "Operation Type" combo contained in the node.
 The Json sample data requested as input is displayed on the node for each operation.
