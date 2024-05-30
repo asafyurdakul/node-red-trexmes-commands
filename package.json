@@ -17,7 +17,7 @@
     "src/"
   ],
   "directories": {
-    "example": "examples"
+    "example": "src/examples"
   },
   "keywords": [
     "node-red",
