@@ -10,14 +10,8 @@
   "node-red": {
     "version": ">=2.0.0",
     "nodes": {
-      "trexcommands": "src/trexcommands.js"
+      "trexcommands": "trexcommands.js"
     }
-  },
-  "files": [
-    "src/"
-  ],
-  "directories": {
-    "example": "src/examples"
   },
   "keywords": [
     "node-red",
