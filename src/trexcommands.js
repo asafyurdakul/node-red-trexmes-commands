@@ -32,7 +32,7 @@ module.exports = function (RED) {
     }
 
     function checkPayload(payload) {
-        let result = { "isOk" : false };
+        let result = { "isOk" : false, "isGetFunc": false };
         if(!payload.WorkstationId){
             return result;
         }
@@ -111,7 +111,12 @@ module.exports = function (RED) {
             }
             result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "DefectId": payload.DefectId, "StockId": payload.StockId, "Quantity": payload.Quantity, "ReferenceQuantityType": 0 });
             result.isOk = true;
-        }                                        
+        } 
+        else if(payload.operationMode == "100" ) { // Get Open Jobs
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.isOk = true;
+            result.isGetFunc = true;
+        }                                       
         return result;
     }
 
@@ -139,6 +144,100 @@ module.exports = function (RED) {
         return sql;
     }
 
+    function sqlGenerateProductionPlanQuery(record) {
+
+        let SqlPorderNo = `(SELECT B.RECEIPTNO FROM PJOBORDERPROT B (NOLOCK) WHERE COMPANYID = ${record.companyId} 
+                             AND B.CPERIODID = ${record.cperiodId} 
+                             AND B.RECEIPTID = (SELECT TOP 1 B.PJOBORDERID FROM PPRODUCTPLANITEM B (NOLOCK) WHERE B.COMPANYID = ${record.companyId} AND B.PID = A.PID)) AS PORDERNO `;
+        let SqlSipBilgi = " '' AS SIPBILGI";
+        let SqlUreSipBilgi = `ISNULL((SELECT PORDERSNO FROM PORDERS (NOLOCK) WHERE COMPANYID = A.COMPANYID AND CPERIODID =  ${record.cperiodId}  AND PORDERSID = (SELECT PORDERSID FROM PJOBORDERPROT WHERE COMPANYID = A.COMPANYID AND CPERIODID =  ${record.cperiodId} 
+                              AND RECEIPTID = A.PJOBORDERID)),'') AS URESIPBILGI `;
+        let SqlUretilen = " A.PQUANTITY";
+        let SqlPidWhere = ` AND A.PID IN (SELECT A.PID FROM PPRODUCTPLANWS A, PPRODUCTPLANITEM B, STOCK C (NOLOCK) 
+                                            WHERE A.COMPANYID = B.COMPANYID
+                                            AND A.PID = B.PID
+                                            AND A.PIDSTATUS = 2
+                                            AND B.COMPANYID = C.COMPANYID
+                                            AND B.STOCKID = C.STOCKID)`;
+        let SqlPWorkStation = "";
+        let SqlIsYuklemeSirasi = "ROW_NUMBER() OVER(ORDER BY A.SORTID ASC) AS SEQUENCENO, ";
+        //Planlı Bakımlar Gösterilmesin
+        SqlPidWhere += " AND ISNULL(A.PTASKSID,0) != 99";
+
+        if (record.isShowingOnlyJobsToCome) {
+            SqlPidWhere += " AND A.STARTDATE >= GETDATE()";
+        }
+        if (record.isShowingOnlyPassedJobs) {
+            SqlPidWhere += " AND A.STARTDATE <= GETDATE()";
+        }        
+        SqlPidWhere += " AND A.PIDSTATUS <> 3";
+        
+        if (record.isShowingSameStationGroupJobs) {
+            SqlPWorkStation = `SELECT A.PWORKSTATIONID FROM PWORKSTATION A (NOLOCK)
+                 WHERE A.COMPANYID = ${record.companyId}
+                 AND A.GROUPCODE = (SELECT GROUPCODE FROM PWORKSTATION WHERE COMPANYID = ${record.companyId} AND PWORKSTATIONID = ${record.wsId} )`;            
+        }
+        else if (record.isShowingSameWorkCenterJobs) {
+            SqlPWorkStation = `SELECT A.PWORKSTATIONID FROM PWORKSTATION A (NOLOCK)
+                 WHERE A.COMPANYID = ${record.companyId}
+                 AND A.PWORKCENTERID = (SELECT B.PWORKCENTERID FROM PWORKSTATION B WHERE B.COMPANYID = ${record.companyId} AND B.PWORKSTATIONID IN ( @SqlPWorkStation ))`;                
+        }
+       
+             
+        let query = `DECLARE 
+                    @SqlPWorkStation VARCHAR(100)        
+                    SELECT @SqlPWorkStation = PLINETOP.PWORKSTATIONID 
+                    FROM PLINETOP WITH (NOLOCK) 
+                    LEFT OUTER JOIN PLINEDET WITH (NOLOCK) ON PLINETOP.COMPANYID = PLINEDET.COMPANYID AND PLINEDET.PLINEID = PLINETOP.PLINEID 
+                    WHERE PLINEDET.COMPANYID = ${record.companyId} AND PLINEDET.PWORKSTATIONID = ${record.wsId} 
+                    ORDER BY PLINETOP.PLINENO `;
+
+        query = query + ` SELECT ${SqlIsYuklemeSirasi} A.PWORKSTATIONID, PW.PWORKSTATIONNO, A.SORTID, A.PID, A.DESCRIPTION, A.WORKSTARTDATE, A.PSTOPCAUSEID, A.SETUPDURATION, A.EMPDURATION,
+            A.SPEED, A.PJOBORDERID, PJB.PROORDERSNO, PJB.TRANSCODE, A.PEQUIPMENTID, PE.PEQUIPMENTNO, A.DURATION, A.FPLANSTARTDATE, A.REQWORKEMPCOUNT, A.ITEMNO, A.PLANSHIFT, A.PLANWEEK, A.PLANDAY, A.PRIORITY,
+            A.STOCKID, A.CAPACITY, A.CYCLEUNIT, A.PPROTREEID, A.PPROTREEITEMID, A.PRODUCTNUMBER, A.PRODUCTNUMBER1, A.NOTES, DATEPART(WEEK, A.STARTDATE) HAFTA, PJB.PJOBORDERGROUPNO, PJB.PJOBORDERGROUPORDERNO, PJB.RECEIPTNO,
+            (SELECT TOP 1 B.STOCKNO FROM VE_PPRODUCTPLANITEM B (NOLOCK) WHERE A.COMPANYID = B.COMPANYID AND A.PID = B.PID) STOCKNO, 
+            (SELECT TOP 1 B.STOCKNAME FROM VE_PPRODUCTPLANITEM B (NOLOCK) WHERE A.COMPANYID = B.COMPANYID AND A.PID = B.PID) STOCKNAME, 
+            A.CYCLEPERIOD, A.CYCLEOFCOE, A.CYCLEOFPULSE, A.STARTDATE, A.GROUPCODE, A.SPECCODE1, A.SPECCODE2, 
+            A.QUANTITY ORJQTY, A.QUANTITY2 ORJQTY2, A.QUANTITY3 ORJQTY3, A.PQUANTITY, A.PQUANTITY2, A.PQUANTITY3, 
+            A.QUANTITY - ${SqlUretilen} QUANTITY, A.QUANTITY2 - ${SqlUretilen}2 QUANTITY2, A.QUANTITY3 - ${SqlUretilen}3 QUANTITY3, 
+            ${SqlPorderNo}, A.PPROCESSID, P.PPROCESSNO, P.PPROCESSNAME, ${SqlUreSipBilgi}, ${SqlSipBilgi} FROM PPRODUCTPLANWS A (NOLOCK)
+            LEFT JOIN PPROCESS P ON A.COMPANYID = P.COMPANYID AND A.PPROCESSID = P.PPROCESSID
+            LEFT JOIN PEQUIPMENT PE ON A.COMPANYID = PE.COMPANYID AND A.PEQUIPMENTID = PE.PEQUIPMENTID
+            LEFT JOIN PWORKSTATION PW ON A.COMPANYID = PW.COMPANYID AND A.PWORKSTATIONID = PW.PWORKSTATIONID
+            LEFT JOIN PJOBORDERPROT PJB ON A.COMPANYID = PJB.COMPANYID AND A.PJOBORDERID = PJB.RECEIPTID
+            WHERE A.COMPANYID = ${record.companyId}
+            ${SqlPidWhere} AND ISNULL(A.PPARENTID, 0) > 0`;
+
+        if(SqlPWorkStation.length === 0) {
+            SqlPWorkStation = "@SqlPWorkStation";
+        }
+        if (!record.IsProducedQuantityConditionDisabled) {
+            query += ` AND A.QUANTITY - ${SqlUretilen} > 0 \n`;
+        }
+        if (record.isLineProductionEnabled && record.isFinishingPlanWhenCompleted) {
+            query += ` AND (A.QUANTITY - (SELECT ISNULL(SUM(QUANTITY),0) PQTY FROM PRECEIPTOT WITH (NOLOCK) WHERE COMPANYID = A.COMPANYID AND PID = A.PID AND PWORKSTATIONID = ${record.wsId} )) > 0 ` ;
+        }        
+        query += ` AND A.PWORKSTATIONID IN (${SqlPWorkStation} )\n`;
+
+        
+        if (record.isCheckingPreviousOperationWorkingControl && record.isCheckingPreviousOperationProductionControl) {
+            query += ` AND (CASE WHEN PJB.PPARENTID != 0 THEN (SELECT SUM(ISNULL(QUANTITY,0)) FROM PRECEIPTOT NOLOCK WHERE COMPANYID = PJB.COMPANYID AND PJOBORDERID = PJB.PPARENTID) ELSE 1 END > 0 
+                       OR  EXISTS(SELECT 1 FROM PWSSTATUS S WITH(NOLOCK)  INNER JOIN PPRODUCTPLANITEM P WITH(NOLOCK) ON P.COMPANYID = S.COMPANYID AND P.PID = S.PJOBID 
+                       WHERE S.COMPANYID = A.COMPANYID AND P.PJOBORDERID = PJB.PPARENTID)) \n`; 
+        }
+        else if (record.isCheckingPreviousOperationProductionControl) {
+            query += ` AND (CASE WHEN PJB.PPARENTID != 0 THEN (SELECT SUM(ISNULL(QUANTITY,0)) FROM PRECEIPTOT NOLOCK WHERE COMPANYID = PJB.COMPANYID AND PJOBORDERID = PJB.PPARENTID) ELSE 1 END > 0 )`;
+        }
+        else if (record.isCheckingPreviousOperationWorkingControl) {
+            query += ` AND EXISTS (SELECT 1 FROM PWSSTATUS S WITH (NOLOCK)  INNER JOIN PPRODUCTPLANITEM P WITH (NOLOCK) ON P.COMPANYID=S.COMPANYID AND P.PID = S.PJOBID 
+                        WHERE S.COMPANYID = A.COMPANYID AND P.PJOBORDERID = PJB.PPARENTID) ` ;
+        }
+
+        query += " ORDER BY A.STARTDATE, ISNULL(A.SORTID,A.PID)"; 
+
+        return query;
+    }
+
     function connection(config) {
         RED.nodes.createNode(this, config);
         const node = this;
@@ -164,6 +263,7 @@ module.exports = function (RED) {
             server: config.server,
             database: config.database,
             companyId: config.companyId,
+            cperiodId: config.cperiodId,
             userId: config.userId,
             options: {
                 port: config.port ? safeParseInt(config.port, 1433) : undefined,
@@ -307,6 +407,15 @@ module.exports = function (RED) {
         node.throwErrors = !(!config.throwErrors || config.throwErrors === '0');
 
         node.modeOptType = config.modeOptType || '1';
+        node.isShowingOnlyJobsToCome = config.isShowingOnlyJobsToCome;
+        node.isShowingOnlyPassedJobs = config.isShowingOnlyPassedJobs;
+        node.isShowingSameStationGroupJobs = config.isShowingSameStationGroupJobs;
+        node.isShowingSameWorkCenterJobs = config.isShowingSameWorkCenterJobs;
+        node.isProducedQuantityConditionDisabled = config.isProducedQuantityConditionDisabled;
+        node.isLineProduction = config.isLineProduction;
+        node.isFinishingPlanWhenCompleted = config.isFinishingPlanWhenCompleted;
+        node.isCheckingPreviousOperationWorkingControl = config.isCheckingPreviousOperationWorkingControl;
+        node.isCheckingPreviousOperationProductionControl = config.isCheckingPreviousOperationProductionControl;
 
         const setResult = function (msg, field, value, returnType = 0) {
             const set = (obj, path, val) => {
@@ -406,72 +515,108 @@ module.exports = function (RED) {
 
 				let record = {};
                 record.companyId = trexmesCN.config.companyId;
+                record.cperiodId = trexmesCN.config.cperiodId;
                 record.userId = trexmesCN.config.userId;
                 record.cmdId = msg.operationMode;
                 record.command = resultCmd.command;
                 record.wsId = resultCmd.wsId;
                 
-                query = sqlNgpCommandQueInsert(record);
-                //node.log("query: " + query);
+                if(resultCmd.isGetFunc) {                    
+                    if(record.cmdId == "100") 
+                    {    
+                        record.isShowingOnlyJobsToCome = node.isShowingOnlyJobsToCome;
+                        record.isShowingOnlyPassedJobs = node.isShowingOnlyPassedJobs;
+                        record.isShowingSameStationGroupJobs = node.isShowingSameStationGroupJobs;
+                        record.isShowingSameWorkCenterJobs = node.isShowingSameWorkCenterJobs;
+                        record.isProducedQuantityConditionDisabled = node.isProducedQuantityConditionDisabled;
+                        record.isLineProduction = node.isLineProduction;
+                        record.isFinishingPlanWhenCompleted = node.isFinishingPlanWhenCompleted;
+                        record.isCheckingPreviousOperationWorkingControl = node.isCheckingPreviousOperationWorkingControl;
+                        record.isCheckingPreviousOperationProductionControl = node.isCheckingPreviousOperationProductionControl;
+                
+                        query = sqlGenerateProductionPlanQuery(record);                                            
+                    }
+                }
+                else {
+                    query = sqlNgpCommandQueInsert(record);
+                }
+                node.log("query: " + query);
 				
                 trexmesCN.execSql("", query, [], {}, function (err, data, info) {
                     if (err) {
                         node.processError(err, msg);
                     } else {
-                        node.status({
-                            fill: 'yellow',
-                            shape: 'dot',
-                            text: 'Sended, aprove waiting.. '
-                        });                        
+                        if (!resultCmd.isGetFunc) {
+                            node.status({
+                                fill: 'yellow',
+                                shape: 'dot',
+                                text: 'Sended, aprove waiting.. '
+                            });
+                        }
+                        else {
+                            node.status({
+                                fill: 'green',
+                                shape: 'dot',
+                                text: 'done.'
+                            });
+                        }
                         setResult(msg, node.outField, data, node.returnType);
                         //node.send(msg);
                         //node.send(msg.payload.length);
                         let commandId = 0;
                         if(msg.payload.length>0) {
-                            commandId = msg.payload[0].maxID;
+                            if(msg.payload[0].maxID) {
+                                commandId = msg.payload[0].maxID;
+                            }
                         }
-                        //Process onay bekleniyor
-                        setTimeout(function () {
-                            query = "select Q.COMMANDID,Q.ISPROCESSED,P.ISSUCCESS,P.MESSAGE from NGPCOMMANDQUEUE Q join NGPCOMMANDRESPONSE P on Q.COMMANDID = P.COMMANDID where P.COMMANDID=" + commandId;                            
-                            //node.log(query);
-                            trexmesCN.execSql("", query, [], {}, function (err, data, info) {
-                                if (err) {
-                                    node.processError(err, msg);
-                                } else {  
-                                    setResult(msg, node.outField, data, node.returnType);
-                                    let isProcessed = 0;
-                                    let isSuccess = 0;
-                                    let message = "";
-                                    if(msg.payload.length>0) {
-                                        isProcessed = msg.payload[0].ISPROCESSED;
-                                        isSuccess = msg.payload[0].ISSUCCESS;
-                                        message =  msg.payload[0].MESSAGE;
+
+                        if (!resultCmd.isGetFunc) {
+                            //Process onay bekleniyor
+                            setTimeout(function () {
+                                query = "select Q.COMMANDID,Q.ISPROCESSED,P.ISSUCCESS,P.MESSAGE from NGPCOMMANDQUEUE Q join NGPCOMMANDRESPONSE P on Q.COMMANDID = P.COMMANDID where P.COMMANDID=" + commandId;
+                                //node.log(query);
+                                trexmesCN.execSql("", query, [], {}, function (err, data, info) {
+                                    if (err) {
+                                        node.processError(err, msg);
+                                    } else {
+                                        setResult(msg, node.outField, data, node.returnType);
+                                        let isProcessed = 0;
+                                        let isSuccess = 0;
+                                        let message = "";
+                                        if (msg.payload.length > 0) {
+                                            isProcessed = msg.payload[0].ISPROCESSED;
+                                            isSuccess = msg.payload[0].ISSUCCESS;
+                                            message = msg.payload[0].MESSAGE;
+                                        }
+                                        node.send(msg);
+                                        if (isProcessed == 1 && isSuccess == 1) {
+                                            node.status({
+                                                fill: 'green',
+                                                shape: 'dot',
+                                                text: 'done'
+                                            });
+                                        }
+                                        else if (isProcessed == 1 && isSuccess == 0) {
+                                            node.status({
+                                                fill: 'yellow',
+                                                shape: 'dot',
+                                                text: 'done with error: ' + message
+                                            });
+                                        }
+                                        else {
+                                            node.status({
+                                                fill: 'blue',
+                                                shape: 'dot',
+                                                text: 'command not processed in 2 sec.'
+                                            });
+                                        }
                                     }
-                                    node.send(msg);
-                                    if( isProcessed == 1 && isSuccess == 1) {
-                                        node.status({
-                                            fill: 'green',
-                                            shape: 'dot',
-                                            text: 'done'
-                                        });      
-                                    }
-                                    else if( isProcessed == 1 && isSuccess == 0) {
-                                        node.status({
-                                            fill: 'yellow',
-                                            shape: 'dot',
-                                            text: 'done with error: ' + message 
-                                        });    
-                                    }
-                                    else {
-                                        node.status({
-                                            fill: 'blue',
-                                            shape: 'dot',
-                                            text: 'command not processed in 2 sec.'
-                                        });   
-                                    }
-                                }
-                            });
-                        }, 2000);      
+                                });
+                            }, 2000);
+                        }
+                        else {
+                            node.send(msg);
+                        }
                     }
                 });
             } catch (err) {

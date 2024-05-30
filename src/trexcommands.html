@@ -85,7 +85,11 @@
       <div class="form-row trexmes-cmd-form-row">
         <label for="node-config-input-companyId"><i class="fa fa-building"></i> <span data-i18n="trexMes-CMD.connection.label.companyId"></label>
         <input type="text" id="node-config-input-companyId">
-      </div>  
+      </div>
+      <div class="form-row trexmes-cmd-form-row">
+        <label for="node-config-input-cperiodId"><i class="fa fa-building"></i> <span data-i18n="trexMes-CMD.connection.label.cperiodId"></label>
+        <input type="text" id="node-config-input-cperiodId">
+      </div>    
       <div class="form-row trexmes-cmd-form-row">
         <label for="node-config-input-userId"><i class="fa fa-user-md"></i> <span data-i18n="trexMes-CMD.connection.label.userId"></label>
         <input type="text" id="node-config-input-userId">
@@ -180,6 +184,10 @@
                 value: 0,
                 required: true
             },
+            cperiodId: {
+                value: 0,
+                required: true
+            },            
             userId: {
                 value: 0,
                 required: true
@@ -253,19 +261,54 @@
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="trexMes-CMD.node.label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]trexMes-CMD.node.label.name">
     </div>
-	
-	
+		
     <div class="form-row trexmes-cmd-form-row">
-        <label for="node-input-data"><i class="fa fa-list-ul"></i> <span data-i18n="trexMes-CMD.node.label.query_mode"></span></label>
+        <label for="node-input-modeOpt"><i class="fa fa-list-ul"></i> <span data-i18n="trexMes-CMD.node.label.query_mode"></span></label>
         <input type="hidden" id="node-input-modeOptType">
         <input type="text" id="node-input-modeOpt" style="width: 70%" data-i18n="[placeholder]trexMes-CMD.node.label.query_mode">
     </div>
-	
+
+    <label for="node-input-getOpenJobs-filter" id="node-input-label-getOpenJobs-filter" style="display:none"><i class="fa fa-filter"></i><span data-i18n="trexMes-CMD.node.label.getOpenJobs-filter"></span></label>  
+    <div class="form-row trexmes-cmd-form-row" id="node-input-getOpenJobs-filter" style="display:none">
+
+        <label for="node-input-isShowingOnlyJobsToCome" style="width: 70%"><span data-i18n="trexMes-CMD.node.label.isShowingOnlyJobsToCome"></span></label>        
+        <input type="checkbox" id="node-input-isShowingOnlyJobsToCome" style="width: 30%" data-i18n="[placeholder]trexMes-CMD.node.label.isShowingOnlyJobsToCome">
+        <br>
+        <label for="node-input-isShowingOnlyPassedJobs" style="width: 70%"><span data-i18n="trexMes-CMD.node.label.isShowingOnlyPassedJobs"></span></label>        
+        <input type="checkbox" id="node-input-isShowingOnlyPassedJobs" style="width: 30%" data-i18n="[placeholder]trexMes-CMD.node.label.isShowingOnlyPassedJobs">
+        <br>
+        <label for="node-input-isShowingSameStationGroupJobs" style="width: 70%"><span data-i18n="trexMes-CMD.node.label.isShowingSameStationGroupJobs"></span></label>        
+        <input type="checkbox" id="node-input-isShowingSameStationGroupJobs" style="width: 30%" data-i18n="[placeholder]trexMes-CMD.node.label.isShowingSameStationGroupJobs">
+        <br>
+        <label for="node-input-isShowingSameWorkCenterJobs" style="width: 70%"><span data-i18n="trexMes-CMD.node.label.isShowingSameWorkCenterJobs"></span></label>        
+        <input type="checkbox" id="node-input-isShowingSameWorkCenterJobs" style="width: 30%" data-i18n="[placeholder]trexMes-CMD.node.label.isShowingSameWorkCenterJobs">
+        <br>
+        <label for="node-input-isProducedQuantityConditionDisabled" style="width: 70%"><span data-i18n="trexMes-CMD.node.label.isProducedQuantityConditionDisabled"></span></label>        
+        <input type="checkbox" id="node-input-isProducedQuantityConditionDisabled" style="width: 30%" data-i18n="[placeholder]trexMes-CMD.node.label.isProducedQuantityConditionDisabled">
+        <br>
+        <label for="node-input-isLineProduction" style="width: 70%"><span data-i18n="trexMes-CMD.node.label.isLineProduction"></span></label>        
+        <input type="checkbox" id="node-input-isLineProduction" style="width: 30%" data-i18n="[placeholder]trexMes-CMD.node.label.isLineProduction">
+        <br>
+        <label for="node-input-isFinishingPlanWhenCompleted" style="width: 70%"><span data-i18n="trexMes-CMD.node.label.isFinishingPlanWhenCompleted"></span></label>        
+        <input type="checkbox" id="node-input-isFinishingPlanWhenCompleted" style="width: 30%" data-i18n="[placeholder]trexMes-CMD.node.label.isFinishingPlanWhenCompleted">
+        <br>
+        <label for="node-input-isCheckingPreviousOperationProductionControl" style="width: 70%"><span data-i18n="trexMes-CMD.node.label.isCheckingPreviousOperationProductionControl"></span></label>        
+        <input type="checkbox" id="node-input-isCheckingPreviousOperationProductionControl" style="width: 30%" data-i18n="[placeholder]trexMes-CMD.node.label.isCheckingPreviousOperationProductionControl">
+        <br>
+        <label for="node-input-isCheckingPreviousOperationWorkingControl" style="width: 70%"><span data-i18n="trexMes-CMD.node.label.isCheckingPreviousOperationWorkingControl"></span></label>        
+        <input type="checkbox" id="node-input-isCheckingPreviousOperationWorkingControl" style="width: 30%" data-i18n="[placeholder]trexMes-CMD.node.label.isCheckingPreviousOperationWorkingControl">
+       
+        
+    </div>
+
+    
+
+
     <div class="form-row trexmes-cmd-form-row node-text-editor-row" style="min-height: 60px; margin-top: -6px;">
 	   <label for="node-json-param-editor" style="width: 100% !important;"><i class="fa fa-tag"></i> <span data-i18n="trexMes-CMD.node.label.editor"></span></label>
 	   <div style="height: 60px;"  class="node-text-editor" id="node-json-param-editor" ></div>
     </div>
- 
+
     <div class="form-row trexmes-cmd-form-row">
         <label for="node-input-throwErrors"><i class="fa fa-exclamation"></i> <span data-i18n="trexMes-CMD.node.label.error_handling"></label>
         <select id="node-input-throwErrors" style="width: 70%">
@@ -299,6 +342,36 @@
             },
             modeOptType: {
                 value: '1|Load Job Plan' 
+            },
+            isShowingOnlyJobsToCome: {
+                value: false
+            },
+            isShowingOnlyPassedJobs: {
+                value: false
+            },
+            isShowingSameStationGroupJobs: {
+                value: false
+            },
+            isShowingSameStationGroupJobs: {
+                value: false
+            },
+            isShowingSameWorkCenterJobs: {
+                value: false
+            },
+            isProducedQuantityConditionDisabled: {
+                value: false
+            },
+            isLineProduction: {
+                value: false
+            },
+            isFinishingPlanWhenCompleted: {
+                value: false
+            },
+            isCheckingPreviousOperationProductionControl: {
+                value: false
+            },
+            isCheckingPreviousOperationWorkingControl: {
+                value: false
             }
         },
         inputs: 1,
@@ -342,7 +415,8 @@
                     { value: '13|Shifted Shift', label: 'Shifted Shift', hasValue: false },
                     { value: '14|Start Test Mode', label: 'Start Test Mode', hasValue: false },
                     { value: '15|Finish Test Mode', label: 'Finish Test Mode', hasValue: false },
-                    { value: '16|Create Deffect', label: 'Create Deffect', hasValue: false }                                                                                                    
+                    { value: '16|Create Deffect', label: 'Create Deffect', hasValue: false },
+                    { value: '100|Get Open Jobs', label: 'Get Open Jobs', hasValue: false }                                                                                                                        
                 ],
                 typeField: $('#node-input-modeOptType'),
                 default: 'Load Job Plan'
@@ -351,7 +425,9 @@
             //show expected data sample
             modeField.on('change', function() {
                 const operationMode = $(this).typedInput('type');					
-				
+				$("#node-input-label-getOpenJobs-filter").hide();
+                $("#node-input-getOpenJobs-filter").hide();
+
 				let data = '{}';
 				if(operationMode.startsWith('1|')) { // Load Job Plan
 					data = '{ "WorkstationId": 10 , "PlanId": 123 }';										
@@ -386,15 +462,26 @@
                 else if(operationMode.startsWith('16|')) { //Create Deffect
 					data = '{ "WorkstationId": 10, "DefectId": 11,"StockId": 12, "Quantity": 15.5 }';									
 				}  
+                else if(operationMode.startsWith('100|')) { //Get Open Jobs
+					data = '{ "WorkstationId": 10 }';		
+                    $("#node-input-label-getOpenJobs-filter").show();
+                    $("#node-input-getOpenJobs-filter").show();							
+				}  
 				node.editor.setValue(JSON.stringify(JSON.parse(data),null, 2));	
 
             });
 			
-			
-            $('#node-input-returnType')[0].selectedIndex = this.returnType ? this.returnType : 0;
+
             $('#node-input-throwErrors')[0].selectedIndex = this.throwErrors ? this.throwErrors : 0;
 
-			
+            if(this.modeOptType.startsWith("100|")) {
+                $("#node-input-label-getOpenJobs-filter").show();
+                $("#node-input-getOpenJobs-filter").show();	            
+            }
+            else {
+                $("#node-input-label-getOpenJobs-filter").hide();
+                $("#node-input-getOpenJobs-filter").hide();	     
+            }
 		},
         oneditsave: function () {
 			const node = this;

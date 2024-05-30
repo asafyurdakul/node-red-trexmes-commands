@@ -13,7 +13,17 @@
                 "editor": "Expected Input Format",                
                 "error_handling": "Error Handling",
                 "error_handling_send_in_msg": "Send in msg.error",
-                "error_handling_throw": "Throw error"                
+                "error_handling_throw": "Throw error",
+                "isShowingOnlyJobsToCome": "Only Jobs to Come",
+                "isShowingOnlyPassedJobs": "Only Passed Jobs",
+                "isShowingSameStationGroupJobs": "Same Station Group Jobs",
+                "isShowingSameWorkCenterJobs": "Same Workcenter Jobs",
+                "isProducedQuantityConditionDisabled":"Remove Check Produced Quantity",
+                "isLineProduction": "Line Production",
+                "isFinishingPlanWhenCompleted": "Finishing Plan When Completed",
+                "isCheckingPreviousOperationWorkingControl": "Check Prev Opr Working",
+                "isCheckingPreviousOperationProductionControl": "Check Prev Opr Product",
+                "getOpenJobs-filter": "Open Jobs Filter Options"             
             }
         },
         "connection": {
@@ -28,6 +38,7 @@
                 "domain": "Domain",
                 "database": "Database",
                 "companyId": "Company Id",
+                "cperiodId": "Period Id",
                 "userId": "User Id", 
                 "tds": {
                     "title": "TDS Version",
