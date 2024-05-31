@@ -116,6 +116,11 @@ module.exports = function (RED) {
             result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
             result.isOk = true;
             result.isGetFunc = true;
+        }   
+        else if(payload.operationMode == "101" ) { // Get StopCause List
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.isOk = true;
+            result.isGetFunc = true;
         }                                       
         return result;
     }
@@ -236,6 +241,41 @@ module.exports = function (RED) {
         query += " ORDER BY A.STARTDATE, ISNULL(A.SORTID,A.PID)"; 
 
         return query;
+    }
+
+    function sqlGenerateStopCauseListQuery(record) {
+        let query = `DECLARE 
+        @ACILIS_DURUS NVARCHAR(100),
+        @ARKAEKIPMAN_DURUS NVARCHAR(100),
+        @ONEKIPMAN_DURUS NVARCHAR(100),
+        @PLANYOK_DURUS NVARCHAR(100),
+        @NOCONNECTION_DURUS NVARCHAR(100),
+        @VARDIYAYOK_DURUS NVARCHAR(100),
+        @SHIFTEDSHIFT_DURUS NVARCHAR(100)
+                
+        select @ACILIS_DURUS = PARAMVALUE from UPSYSPARAM where PARAMNAME='PSTOPCAUSEID_ACILISDURUS' and COMPANYID = ${record.companyId}
+        select @ARKAEKIPMAN_DURUS = PARAMVALUE from UPSYSPARAM where PARAMNAME='PSTOPCAUSEID_ARKAEKIPMANDURUSU' and COMPANYID = ${record.companyId}
+        select @ONEKIPMAN_DURUS = PARAMVALUE from UPSYSPARAM where PARAMNAME='PSTOPCAUSEID_ONEKIPMANDURUSU' and COMPANYID = ${record.companyId}
+        select @PLANYOK_DURUS = PARAMVALUE from UPSYSPARAM where PARAMNAME='PSTOPCAUSEID_PLANYOK' and COMPANYID = ${record.companyId}
+        select @NOCONNECTION_DURUS = PARAMVALUE from UPSYSPARAM where PARAMNAME='PSTOPCAUSEID_NOCONNECTION' and COMPANYID = ${record.companyId}
+        select @VARDIYAYOK_DURUS = PARAMVALUE from UPSYSPARAM where PARAMNAME='PSTOPCAUSEID_VARDIYAYOKDURUSU' and COMPANYID = ${record.companyId}
+        select @SHIFTEDSHIFT_DURUS = PARAMVALUE from UPSYSPARAM where PARAMNAME='PSTOPCAUSEID_SHIFTEDSHIFT' and COMPANYID = ${record.companyId}
+                
+        SELECT A.*
+            ,B.PSTOPCAUSENO
+            ,B.PSTOPCAUSENAME
+            ,B.GROUPCODE
+        FROM PSTOPCAUSEWS A
+        INNER JOIN PSTOPCAUSE B ON A.COMPANYID = B.COMPANYID
+            AND A.PSTOPCAUSEID = B.PSTOPCAUSEID
+        WHERE A.COMPANYID = ${record.companyId}
+            AND B.STATUS = 2
+            AND A.PWORKSTATIONID = ${record.wsId} 
+            AND A.PSTOPCAUSEID NOT IN (@ACILIS_DURUS,@ARKAEKIPMAN_DURUS, @ONEKIPMAN_DURUS,@PLANYOK_DURUS,
+            @NOCONNECTION_DURUS,@VARDIYAYOK_DURUS,@SHIFTEDSHIFT_DURUS)`;
+
+        return query;
+
     }
 
     function connection(config) {
@@ -536,11 +576,15 @@ module.exports = function (RED) {
                 
                         query = sqlGenerateProductionPlanQuery(record);                                            
                     }
+                    else if(record.cmdId == "101") 
+                    {
+                        query = sqlGenerateStopCauseListQuery(record);    
+                    }
                 }
                 else {
                     query = sqlNgpCommandQueInsert(record);
                 }
-                node.log("query: " + query);
+                //node.log("query: " + query);
 				
                 trexmesCN.execSql("", query, [], {}, function (err, data, info) {
                     if (err) {
