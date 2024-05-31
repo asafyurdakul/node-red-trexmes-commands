@@ -34,8 +34,12 @@ module.exports = function (RED) {
     function checkPayload(payload) {
         let result = { "isOk" : false, "isGetFunc": false };
         if(!payload.WorkstationId){
-            return result;
+            if(payload.operationMode != "102" )
+            {
+                return result;
+            }
         }
+
         result.wsId = payload.WorkstationId;
 
         if(payload.operationMode == "1" ) { // Load Job Plan
@@ -121,7 +125,12 @@ module.exports = function (RED) {
             result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
             result.isOk = true;
             result.isGetFunc = true;
-        }                                       
+        } 
+        else if(payload.operationMode == "102" ) { // Get PWorkstation List
+            result.command = JSON.stringify({ });
+            result.isOk = true;
+            result.isGetFunc = true;
+        }                                        
         return result;
     }
 
@@ -276,6 +285,14 @@ module.exports = function (RED) {
 
         return query;
 
+    }
+
+    function sqlGeneratePWorkstationListQuery(record) {
+        let query = `select PWS.PWORKSTATIONID, PWS.PWORKSTATIONNO, 
+                    PWS.PWORKSTATIONNAME from PLINEDET PL inner join PWORKSTATION PWS 
+                    on PL.COMPANYID = PWS.COMPANYID and PL.PWORKSTATIONID = PWS.PWORKSTATIONID
+                    where PWS.COMPANYID= ${record.companyId} and PWS.STATUS = 2`;
+        return query;
     }
 
     function connection(config) {
@@ -579,6 +596,10 @@ module.exports = function (RED) {
                     else if(record.cmdId == "101") 
                     {
                         query = sqlGenerateStopCauseListQuery(record);    
+                    }
+                    else if(record.cmdId == "102") 
+                    {
+                        query = sqlGeneratePWorkstationListQuery(record);    
                     }
                 }
                 else {

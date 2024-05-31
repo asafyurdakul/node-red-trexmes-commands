@@ -417,7 +417,8 @@
                     { value: '15|Finish Test Mode', label: 'Finish Test Mode', hasValue: false },
                     { value: '16|Create Deffect', label: 'Create Deffect', hasValue: false },
                     { value: '100|Get Open Jobs', label: 'Get Open Jobs', hasValue: false },
-                    { value: '101|Get StopCause List', label: 'Get StopCause List', hasValue: false }                                                
+                    { value: '101|Get StopCause List', label: 'Get StopCause List', hasValue: false },
+                    { value: '102|Get PWorkstation List', label: 'Get PWorkstation List', hasValue: false }                                                                     
                 ],
                 typeField: $('#node-input-modeOptType'),
                 default: 'Load Job Plan'
@@ -471,9 +472,9 @@
                 else if(operationMode.startsWith('101|')) { //Get StopCause List
 					data = '{ "WorkstationId": 10 }';									
 				} 
-                else if(operationMode.startsWith('102|')) { //Get Employee List
-					data = '{ "WorkstationId": 10 }';									
-				}                 
+                else if(operationMode.startsWith('102|')) { //Get PWorkstation List
+                    data = '{}';
+                } 
 				node.editor.setValue(JSON.stringify(JSON.parse(data),null, 2));	
 
             });
