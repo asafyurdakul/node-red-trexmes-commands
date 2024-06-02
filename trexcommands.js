@@ -130,7 +130,12 @@ module.exports = function (RED) {
             result.command = JSON.stringify({ });
             result.isOk = true;
             result.isGetFunc = true;
-        }                                        
+        } 
+        else if(payload.operationMode == "103" ) { // Get Station Status
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.isOk = true;
+            result.isGetFunc = true;
+        }                                                
         return result;
     }
 
@@ -292,6 +297,176 @@ module.exports = function (RED) {
                     PWS.PWORKSTATIONNAME from PLINEDET PL inner join PWORKSTATION PWS 
                     on PL.COMPANYID = PWS.COMPANYID and PL.PWORKSTATIONID = PWS.PWORKSTATIONID
                     where PWS.COMPANYID= ${record.companyId} and PWS.STATUS = 2`;
+        return query;
+    }
+
+    function sqlGenerateStationStatusQuery(record) {
+        let query = `
+        SELECT P.COMPANYID
+            ,P.PWORKSTATIONID
+            ,P.PEQUIPMENTID
+            ,P.CPERIODID
+            ,TE.EMPLOYEEID
+            ,P.PJOBID
+            ,P.PJOBORDERID
+            ,P.QUANTITY
+            ,P.QUANTITY2
+            ,P.QUANTITY3
+            ,P.LASTQTY
+            ,P.LASTQTY2
+            ,P.LASTQTY3
+            ,P.LOADED
+            ,P.STOPPED
+            ,P.STOPTYPE
+            ,P.PSTOPCAUSEID
+            ,P.STARTTIME
+            ,P.STOPTIME
+            ,P.DURATION
+            ,P.STOPDUR
+            ,P.WSSTATUS
+            ,P.STOPDURT
+            ,P.PLANSTOPTIME
+            ,P.NOTPLANSTOPTIME
+            ,P.SPEED
+            ,P.SPEEDUNIT
+            ,P.HOURQUNIT
+            ,P.HOURQUANTITY
+            ,P.WORKTIME
+            ,P.SHIFT
+            ,P.SHIFTID
+            ,P.EMPCHANGEDATE
+            ,P.EMPCHANGEQTY
+            ,P.AVGSPEED
+            ,P.RANDIMAN
+            ,P.CLIVERSION
+            ,P.ACYCLEPERIOD
+            ,P.INSERTDATE
+            ,E.EMPLOYEENO AS EMPLOYEENO
+            ,E.EMPLOYEENAME AS EMPLOYEENAME
+            ,WS.PWORKSTATIONNO AS PWORKSTATIONNO
+            ,WS.PWORKSTATIONNAME AS PWORKSTATIONNAME
+            ,WS.STATUS AS ISISTASYONUDURUM
+            ,WC.PWORKCENTERID AS PWORKCENTERID
+            ,WC.PWORKCENTERNO AS PWORKCENTERNO
+            ,WC.PWORKCENTERNAME AS PWORKCENTERNAME
+            ,DBO.[GET_JO_RECEIPTNO_FOR_PID](P.COMPANYID, P.CPERIODID, P.PJOBID) RECEIPTNO
+            ,DBO.[GET_JO_STOCKNO_FOR_PID](P.COMPANYID, P.CPERIODID, P.PJOBID) STOCKNO
+            ,DBO.[GET_JO_STOCKNAME_FOR_PID](P.COMPANYID, P.CPERIODID, P.PJOBID) STOCKNAME
+            ,DBO.[GET_JO_QTYPRO_FOR_PID](P.COMPANYID, P.CPERIODID, P.PJOBID) AS ISEMRIURETIMMIKTAR
+            ,R.STOCKID
+            ,R.GRADEID AS GRADEID
+            ,R.GRADENAME AS GRADENAME
+            ,R.PEQUIPMENTNO AS PEQUIPMENTNO
+            ,R.PEQUIPMENTNAME AS PEQUIPMENTNAME
+            ,R.PPROCESSNO AS PPROCESSNO
+            ,R.PPROCESSNAME AS PPROCESSNAME
+            ,R.PPROTREEID AS PPROTREEID
+            ,SC.PSTOPCAUSENO
+            ,SC.PSTOPCAUSENAME
+            ,R.QUANTITY AS ISEMRIMIKTAR
+            ,R.DESCRIPTION AS ISACIKLAMA
+            ,R.PQUANTITY
+            ,R.PQUANTITY2
+            ,R.PQUANTITY3
+            ,R.SPEED AS PLANSPEED
+            ,R.CYCLEUNIT AS CYCLEUNIT
+            ,R.CYCLEPERIOD AS CYCLEPERIOD
+            ,R.CYCLEOFCOE AS CYCLEOFCOE
+            ,R.COFSOCKET AS COFSOCKET
+            ,R.PROCMULT AS PROCMULT
+            ,PWSO.A AS AVAIBILITY
+            ,PWSO.P AS PERFORMANS
+            ,PWSO.Q AS QUALITY
+            ,PWSO.OEE AS OEE
+            ,DATEDIFF(MINUTE, P.INSERTDATE, GETDATE()) AS BAGLANTI
+            ,(
+                SELECT SUM(PI.PQUANTITY * ISNULL(PI.CYCLEPERIOD, 0))
+                FROM PPRODUCTPLANITEM PI(NOLOCK)
+                WHERE PI.COMPANYID = R.COMPANYID
+                    AND PI.PID = R.PID
+                ) AS CALISILANZAMAN
+            ,P.LOSSQTY ISKARTA
+            ,ISNULL(PL.PLINEID, 0) PLINEID
+            ,UNIT.UNITID
+            ,UNIT.UNITNAME
+            ,UNIT.UNITID2
+            ,UNIT.UNITNAME2
+            ,UNIT.UNITID3
+            ,UNIT.UNITNAME3
+            ,PSH.NOTWORKING
+            ,CASE 
+                WHEN P.PSTOPCAUSEID = - 999
+                    THEN NULL
+                ELSE DATEDIFF(second, P.STOPTIME, getdate())
+                END STOPSTARTTIME
+        FROM VE_PWSSTATUS AS P(NOLOCK)
+        LEFT OUTER JOIN VE_PPRODUCTPLANWS AS R(NOLOCK) ON P.COMPANYID = R.COMPANYID
+            AND P.PJOBID = R.PID
+        LEFT OUTER JOIN PWORKCENTER AS WC(NOLOCK)
+        INNER JOIN PWORKSTATION AS WS(NOLOCK) ON WC.PWORKCENTERID = WS.PWORKCENTERID
+            AND WC.COMPANYID = WS.COMPANYID ON P.COMPANYID = WS.COMPANYID
+            AND P.PWORKSTATIONID = WS.PWORKSTATIONID
+            AND WS.STATUS = 2 LEFT OUTER JOIN PWSSTATUSOTHER PWSO(NOLOCK) ON P.COMPANYID = PWSO.COMPANYID
+            AND P.PWORKSTATIONID = PWSO.PWORKSTATIONID LEFT OUTER JOIN PSTOPCAUSE SC(NOLOCK) ON P.COMPANYID = SC.COMPANYID
+            AND P.PSTOPCAUSEID = SC.PSTOPCAUSEID LEFT OUTER JOIN TEAMEMPLOYEE AS TE(NOLOCK) ON TE.COMPANYID = P.COMPANYID
+            AND TE.TEAMEMPLOYEEID = P.EMPLOYEEID LEFT OUTER JOIN.EMPLOYEE AS E(NOLOCK) ON TE.COMPANYID = E.COMPANYID
+            AND TE.EMPLOYEEID = E.EMPLOYEEID LEFT OUTER JOIN PLINEDET PL ON WS.COMPANYID = PL.COMPANYID
+            AND WS.PWORKSTATIONID = PL.PWORKSTATIONID LEFT JOIN PSHIFTSCHEDULER PSH WITH (NOLOCK) ON PSH.COMPANYID = P.COMPANYID
+            AND PSH.PWORKSTATIONID = P.PWORKSTATIONID
+            AND P.INSERTDATE BETWEEN PSH.STARTTIME
+                AND PSH.FINISHTIME LEFT JOIN (
+            SELECT S.COMPANYID
+                ,S.STOCKID
+                ,S.STOCKNAME
+                ,S.UNITID
+                ,S.UNITNAME
+                ,MAX(ISNULL(CASE 
+                            WHEN X.UNITORDERID = 1
+                                THEN X.UNITID
+                            END, 0)) UNITID2
+                ,MAX(ISNULL(CASE 
+                            WHEN X.UNITORDERID = 1
+                                THEN X.UNITNAME
+                            END, '')) UNITNAME2
+                ,MAX(ISNULL(CASE 
+                            WHEN X.UNITORDERID = 2
+                                THEN X.UNITID
+                            END, 0)) UNITID3
+                ,MAX(ISNULL(CASE 
+                            WHEN X.UNITORDERID = 2
+                                THEN X.UNITNAME
+                            END, '')) UNITNAME3
+            FROM VE_STOCK S
+            LEFT OUTER JOIN (
+                SELECT A.*
+                    ,B.STOCKID
+                    ,ROW_NUMBER() OVER (
+                        PARTITION BY A.COMPANYID
+                        ,B.STOCKID ORDER BY A.COMPANYID
+                            ,B.STOCKID
+                            ,B.ITEMNO
+                        ) UNITORDERID
+                FROM STOCKUNIT A WITH (NOLOCK)
+                INNER JOIN STOCKUNITS B WITH (NOLOCK) ON A.COMPANYID = B.COMPANYID
+                    AND A.UNITID = B.UNITID
+                WHERE A.COMPANYID = ${record.companyId} 
+                ) X ON X.COMPANYID = S.COMPANYID
+                AND X.STOCKID = S.STOCKID
+            WHERE S.COMPANYID = ${record.companyId} 
+            GROUP BY S.COMPANYID
+                ,S.STOCKID
+                ,S.STOCKNAME
+                ,S.UNITID
+                ,S.UNITNAME
+            ) UNIT ON UNIT.STOCKID = R.STOCKID
+            AND UNIT.COMPANYID = R.COMPANYID 
+            WHERE 
+            P.COMPANYID = ${record.companyId} and
+            p.PWORKSTATIONID = ${record.wsId}
+            AND WS.STATUS = 2
+            AND ISNULL(WS.NOTVISIBLEFACCON, 0) = 0
+        ORDER BY P.PWORKSTATIONNO
+        `;
         return query;
     }
 
@@ -593,14 +768,15 @@ module.exports = function (RED) {
                 
                         query = sqlGenerateProductionPlanQuery(record);                                            
                     }
-                    else if(record.cmdId == "101") 
-                    {
-                        query = sqlGenerateStopCauseListQuery(record);    
+                    else if (record.cmdId == "101") {
+                        query = sqlGenerateStopCauseListQuery(record);
                     }
-                    else if(record.cmdId == "102") 
-                    {
-                        query = sqlGeneratePWorkstationListQuery(record);    
+                    else if (record.cmdId == "102") {
+                        query = sqlGeneratePWorkstationListQuery(record);
                     }
+                    else if (record.cmdId == "103") {
+                        query = sqlGenerateStationStatusQuery(record);
+                    }                    
                 }
                 else {
                     query = sqlNgpCommandQueInsert(record);
