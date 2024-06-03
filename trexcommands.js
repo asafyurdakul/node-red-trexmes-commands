@@ -34,7 +34,7 @@ module.exports = function (RED) {
     function checkPayload(payload) {
         let result = { "isOk" : false, "isGetFunc": false };
         if(!payload.WorkstationId){
-            if(payload.operationMode != "102" )
+            if(payload.operationMode != "102" && payload.operationMode != "104")
             {
                 return result;
             }
@@ -135,7 +135,12 @@ module.exports = function (RED) {
             result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
             result.isOk = true;
             result.isGetFunc = true;
-        }                                                
+        }  
+        else if(payload.operationMode == "104" ) { // Get Employee List
+            result.command = JSON.stringify({ });
+            result.isOk = true;
+            result.isGetFunc = true;
+        }                                                         
         return result;
     }
 
@@ -470,6 +475,13 @@ module.exports = function (RED) {
         return query;
     }
 
+    function sqlGenerateEmployeeListQuery(record) {
+        let query = `select EMPLOYEEID,EMPLOYEENO,EMPLOYEENAME,
+                    QUALITYEMPLOYEE,MAINTEMPLOYEE,FORKLIFTEMPLOYEE,DEPARTMANID,PWORKCENTERID
+                    from EMPLOYEE where COMPANYID= ${record.companyId} and STATUS = 2`;
+        return query;
+    }
+
     function connection(config) {
         RED.nodes.createNode(this, config);
         const node = this;
@@ -776,7 +788,10 @@ module.exports = function (RED) {
                     }
                     else if (record.cmdId == "103") {
                         query = sqlGenerateStationStatusQuery(record);
-                    }                    
+                    } 
+                    else if (record.cmdId == "104") {
+                        query = sqlGenerateEmployeeListQuery(record);
+                    }                                       
                 }
                 else {
                     query = sqlNgpCommandQueInsert(record);

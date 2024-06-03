@@ -419,7 +419,8 @@
                     { value: '100|Get Open Jobs', label: 'Get Open Jobs', hasValue: false },
                     { value: '101|Get StopCause List', label: 'Get StopCause List', hasValue: false },
                     { value: '102|Get PWorkstation List', label: 'Get PWorkstation List', hasValue: false },
-                    { value: '103|Get Station Status', label: 'Get Station Status', hasValue: false }                                                                                         
+                    { value: '103|Get Station Status', label: 'Get Station Status', hasValue: false },
+                    { value: '104|Get Employee List', label: 'Get Employee List', hasValue: false }                                                                                                                                                                                                      
                 ],
                 typeField: $('#node-input-modeOptType'),
                 default: 'Load Job Plan'
@@ -478,7 +479,10 @@
                 } 
                 else if(operationMode.startsWith('103|')) { //Get Station Status
 					data = '{ "WorkstationId": 10 }';									
-				}                   
+				} 
+                else if(operationMode.startsWith('104|')) { //Get Employee List
+                    data = '{}';
+                }                                   
 				node.editor.setValue(JSON.stringify(JSON.parse(data),null, 2));	
 
             });
