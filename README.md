@@ -49,7 +49,7 @@ As an operation return, for example, when the operation is successful for the "L
 
 The example can be found in the node-red import examples page.
 
-![trexMes-CMD Node image1](https://raw.githubusercontent.com/asafyurdakul/node-red-trexmes-commands/master/src/assets/1.jpg)
+![trexMes-CMD Node image1](https://raw.githubusercontent.com/asafyurdakul/node-red-trexmes-commands/master/assets/1.jpg)
 
 # Requirements
 
