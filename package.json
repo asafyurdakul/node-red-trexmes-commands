@@ -1,6 +1,6 @@
 {
   "name": "node-red-trexmes-commands",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "A node-red node to execute commands for Trex Mes Systems",
   "main": "trexcommands.js",
   "dependencies": {
