@@ -214,7 +214,9 @@ module.exports = function (RED) {
                     FROM PLINETOP WITH (NOLOCK) 
                     LEFT OUTER JOIN PLINEDET WITH (NOLOCK) ON PLINETOP.COMPANYID = PLINEDET.COMPANYID AND PLINEDET.PLINEID = PLINETOP.PLINEID 
                     WHERE PLINEDET.COMPANYID = ${record.companyId} AND PLINEDET.PWORKSTATIONID = ${record.wsId} 
-                    ORDER BY PLINETOP.PLINENO `;
+                    ORDER BY PLINETOP.PLINENO 
+                    SET @SqlPWorkStation = ISNULL(@SqlPWorkStation,${record.wsId})
+                    `;
 
         query = query + ` SELECT ${SqlIsYuklemeSirasi} A.PWORKSTATIONID, PW.PWORKSTATIONNO, A.SORTID, A.PID, A.DESCRIPTION, A.WORKSTARTDATE, A.PSTOPCAUSEID, A.SETUPDURATION, A.EMPDURATION,
             A.SPEED, A.PJOBORDERID, PJB.PROORDERSNO, PJB.TRANSCODE, A.PEQUIPMENTID, PE.PEQUIPMENTNO, A.DURATION, A.FPLANSTARTDATE, A.REQWORKEMPCOUNT, A.ITEMNO, A.PLANSHIFT, A.PLANWEEK, A.PLANDAY, A.PRIORITY,
@@ -258,7 +260,7 @@ module.exports = function (RED) {
         }
 
         query += " ORDER BY A.STARTDATE, ISNULL(A.SORTID,A.PID)"; 
-
+        
         return query;
     }
 
