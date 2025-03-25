@@ -107,13 +107,16 @@ module.exports = function (RED) {
             if(!payload.DefectId){
                 return result;
             }
+            if(!payload.JobOrderId){
+                return result;
+            }
             if(!payload.StockId){
                 return result;
             }
             if(!payload.Quantity){
                 return result;
             }
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "DefectId": payload.DefectId, "StockId": payload.StockId, "Quantity": payload.Quantity, "ReferenceQuantityType": 0 });
+            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "JobOrderId":payload.JobOrderId, "DefectId": payload.DefectId, "StockId": payload.StockId, "Quantity": payload.Quantity, "ReferenceQuantityType": 0 });
             result.isOk = true;
         } 
         else if(payload.operationMode == "100" ) { // Get Open Jobs
