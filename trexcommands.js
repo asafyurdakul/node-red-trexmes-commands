@@ -44,63 +44,64 @@ module.exports = function (RED) {
 
         if(payload.operationMode == "1" ) { // Load Job Plan
             if(!payload.PlanId){
+                node.warn("DENEME");
                 return result;
             }
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "PlanId": payload.PlanId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId, "PlanId": payload.PlanId });
             result.isOk = true;
         }
         else if(payload.operationMode == "4" ) { // Finish Production
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "Quantity": 0, "ReferenceQuantityType": 0, "IsQuantityApproved": false });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId, "Quantity": 0, "ReferenceQuantityType": 0, "IsQuantityApproved": false });
             result.isOk = true;
         }
         else if(payload.operationMode == "5" ) { // Start Stoppage
             if(!payload.StoppageCauseId){
                 return result;
             }
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "StoppageCauseId": payload.StoppageCauseId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId, "StoppageCauseId": payload.StoppageCauseId });
             result.isOk = true;
         }
         else if(payload.operationMode == "6" ) { // Change Stoppage
             if(!payload.StoppageCauseId){
                 return result;
             }
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "StoppageCauseId": payload.StoppageCauseId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId, "StoppageCauseId": payload.StoppageCauseId });
             result.isOk = true;
         }
         else if(payload.operationMode == "7" ) { // Finish Stoppage
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId });
             result.isOk = true;
         }  
         else if(payload.operationMode == "9" ) { // Login Employee
             if(!payload.EmployeeId){
                 return result;
             }
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "EmployeeId": payload.EmployeeId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId, "EmployeeId": payload.EmployeeId });
             result.isOk = true;
         }              
         else if(payload.operationMode == "10" ) { // Logout Employee
             if(!payload.EmployeeId){
                 return result;
             }
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "EmployeeId": payload.EmployeeId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId, "EmployeeId": payload.EmployeeId });
             result.isOk = true;
         }    
         else if(payload.operationMode == "13" ) { // Shifted Shift
             if(!payload.LineId){
                 return result;
             }
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "LineId": payload.LineId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId, "LineId": payload.LineId });
             result.isOk = true;
         } 
         else if(payload.operationMode == "14" ) { // Start Test Mode
             if(!payload.StoppageCauseId){
                 return result;
             }
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "StoppageCauseId": payload.StoppageCauseId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId, "StoppageCauseId": payload.StoppageCauseId });
             result.isOk = true;
         } 
         else if(payload.operationMode == "15" ) { // Finish Test Mode
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId });
             result.isOk = true;
         }
         else if(payload.operationMode == "16" ) { // Create Deffect
@@ -116,16 +117,16 @@ module.exports = function (RED) {
             if(!payload.Quantity){
                 return result;
             }
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId, "JobOrderId":payload.JobOrderId, "DefectId": payload.DefectId, "StockId": payload.StockId, "Quantity": payload.Quantity, "ReferenceQuantityType": 0 });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId, "JobOrderId":payload.JobOrderId, "DefectId": payload.DefectId, "StockId": payload.StockId, "Quantity": payload.Quantity, "ReferenceQuantityType": 0 });
             result.isOk = true;
         } 
         else if(payload.operationMode == "100" ) { // Get Open Jobs
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId });
             result.isOk = true;
             result.isGetFunc = true;
         }   
         else if(payload.operationMode == "101" ) { // Get StopCause List
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId });
             result.isOk = true;
             result.isGetFunc = true;
         } 
@@ -135,7 +136,7 @@ module.exports = function (RED) {
             result.isGetFunc = true;
         } 
         else if(payload.operationMode == "103" ) { // Get Station Status
-            result.command = JSON.stringify({ "WorkstationId" : payload.WorkstationId });
+            result.command = JSON.stringify({ "WorkStationId" : payload.WorkstationId });
             result.isOk = true;
             result.isGetFunc = true;
         }  
